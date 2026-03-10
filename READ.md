@@ -1,116 +1,126 @@
-# LaunchDarkly SE Homework – Feature Flag Demo
+# LaunchDarkly SE Homework – Feature Flag & Targeting Demo
 
 ## Overview
 
-This project demonstrates:
+This repository contains a minimal Flask application built for the LaunchDarkly Solutions Engineering technical exercise.
 
-• Feature release control using LaunchDarkly  
-• Rule-based targeting using context attributes  
-• Real-time UI updates without page reload  
-• Operational remediation (kill switch) behavior  
+The application demonstrates:
 
-The application is built using Flask and the LaunchDarkly Server-side SDK.
+- Feature release control using a LaunchDarkly flag
+- Rule-based targeting using context attributes
+- Real-time UI updates without page reload
+- Operational remediation (kill switch) behavior
 
----
-
-## What This App Does
-
-The application contains a feature flag:
-
-`new-landing-banner`
-
-When the flag evaluates to **true**, the page shows:
-
-→ NEW LANDING COMPONENT  
-
-When the flag evaluates to **false**, the page shows:
-
-→ OLD LANDING  
-
-The UI updates automatically without page refresh.
+The feature under control is a "New Landing Component" that replaces an "Old Landing Component" when the flag evaluates to `true`.
 
 ---
 
-## Targeting Demonstration
+## Architecture Summary
 
-The app sends context attributes:
-
-- key (user identifier)
-- plan (free / pro)
-- region (us / eu)
-
-In LaunchDarkly:
-
-Rule example:
-If `plan` is one of `pro`
-→ serve TRUE
-
-Default rule:
-→ serve FALSE
-
-This allows targeted rollout to only Pro users.
+- Python (Flask)
+- LaunchDarkly Server-side SDK
+- Context built using `Context.builder(key)`
+- Flag evaluated using `variation()`
+- Remediation implemented as an application-level override
+- UI updates via polling (`loadFlag()` runs every 2 seconds)
 
 ---
 
-## Remediation (Kill Switch)
+## Feature Flag Configuration (LaunchDarkly)
 
-The app includes a remediation endpoint:
+Create a boolean feature flag with:
 
-POST `/remediate`
+- **Flag Key:** `new-landing-component`
+- **Environment:** Test
+- **Default Rule:** Serve `false`
 
-When triggered:
-- The feature is forced OFF immediately
-- Even if LaunchDarkly returns true
+Add a targeting rule:
 
-A “Clear Remediation” button restores normal targeting behavior.
+- Context Kind: `user`
+- Attribute: `plan`
+- Operator: `is one of`
+- Value: `pro`
+- Serve: `true`
 
-This simulates operational rollback.
+This configuration enables the feature only for Pro users.
 
 ---
 
 ## Setup Instructions
 
-### 1. Install Dependencies
+### 1. Clone the Repository
 
-### 2. Configure SDK Key
+### 2. Install Dependencies
 
-In `app.py`, replace:
+### 3. Configure LaunchDarkly SDK Key
 
-With your **Server-side SDK key** from the LaunchDarkly Test environment.
+Log into LaunchDarkly:
 
-⚠️ Do not commit real SDK keys to GitHub.
+1. Navigate to your project
+2. Go to **Project Settings → Environments**
+3. Select the **Test** environment
+4. Copy the **Server-side SDK key** (NOT the client-side ID)
+
+Open `app.py` and replace:
+
+with your Test environment Server-side SDK key.
 
 ---
 
 ## Run the Application
 python3 app.py
 
-Open:
-
+Open in browser:
 http://localhost:5001
 
 ---
 
 ## How to Test
 
-1. Set Plan = free  
-   → OLD landing page  
+### Targeting Demonstration
 
-2. Set Plan = pro  
-   → NEW landing page  
+1. Set Plan = `free`
+   → OLD landing page should display
 
-3. Click 🚨 Remediate  
-   → Forces OLD landing  
+2. Set Plan = `pro`
+   → NEW landing page should display
 
-4. Click ✅ Clear Remediation  
-   → Restores targeting behavior  
+This demonstrates rule-based targeting based on context attributes.
+
+---
+
+### Remediation Demonstration
+
+1. Ensure Plan = `pro` (NEW landing visible)
+2. Click 🚨 Remediate (Force OFF)
+   → Page immediately switches to OLD landing
+3. Click ✅ Clear Remediation
+   → Page returns to normal targeting behavior
+
+This demonstrates operational rollback capability.
 
 ---
 
 ## Notes
 
-• Uses LaunchDarkly Server-side SDK  
-• Context evaluation via `variation()`  
-• Remediation implemented locally for demonstration purposes  
-• Designed for SE technical evaluation exercise  
+- Context attributes used:
+  - `key`
+  - `plan`
+  - `region`
 
+- Flag evaluation falls back to `false` if:
+  - SDK key is invalid
+  - Flag is not found
+  - Flag is off
+
+- Remediation is implemented locally to simulate emergency rollback behavior without requiring LaunchDarkly API write permissions.
+
+---
+
+## Security Considerations
+
+- SDK keys must be stored securely in production environments.
+- This demo uses a placeholder key for safety.
+- No sensitive credentials are committed to this repository.
+
+---
