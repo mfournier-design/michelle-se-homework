@@ -17,7 +17,7 @@ The application is built using Flask and the LaunchDarkly Server-side SDK.
 
 The application contains a feature flag:
 
-`new-landing-component`
+`new-landing-banner`
 
 When the flag evaluates to **true**, the page shows:
 
@@ -113,3 +113,4 @@ http://localhost:5001
 • Context evaluation via `variation()`  
 • Remediation implemented locally for demonstration purposes  
 • Designed for SE technical evaluation exercise  
+
